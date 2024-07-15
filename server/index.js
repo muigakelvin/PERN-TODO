@@ -15,7 +15,7 @@ app.post("/todos", async (req, res) => {
     );
     res.json(newTodo);
   } catch (error) {
-    console.error(err.message);
+    console.error(error.message);
   }
 });
 //get all todos

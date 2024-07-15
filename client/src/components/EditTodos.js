@@ -1,18 +1,15 @@
 import React, { Fragment, useState } from "react";
 
-function EditTodos({ todo }) {
+const EditTodo = ({ todo }) => {
   const [description, setDescription] = useState(todo.description);
 
-  const handleDescriptionChange = (e) => {
-    setDescription(e.target.value);
-  };
-
-  const handleEdit = async (e) => {
+  // Edit description function
+  const updateDescription = async (e) => {
     e.preventDefault();
     try {
       const body = { description };
       const response = await fetch(
-        `http://localhost:5000/todo/${todo.todo_id}`,
+        `http://localhost:5000/todos/${todo.todo_id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -20,23 +17,29 @@ function EditTodos({ todo }) {
         }
       );
 
-      if (!response.ok) {
+      if (response.ok) {
+        console.log("Todo updated successfully");
+
+        // Close the modal programmatically
+        const modalElement = document.getElementById(`id${todo.todo_id}`);
+        if (modalElement) {
+          modalElement.classList.remove("show");
+          modalElement.style.display = "none";
+          document.body.classList.remove("modal-open");
+          const modalBackdrops =
+            document.getElementsByClassName("modal-backdrop");
+          while (modalBackdrops.length) {
+            modalBackdrops[0].parentNode.removeChild(modalBackdrops[0]);
+          }
+        }
+
+        // Refresh the page to reflect changes
+        window.location = "/";
+      } else {
         throw new Error("Failed to update todo");
       }
-
-      console.log("Todo updated successfully");
-
-      // Optionally, update your state or perform other actions
-      // For example, you might have a callback function to update the list of todos
-      // updateTodos(); // Assuming you have a function to update todos
-
-      // Close the modal
-      const modal = document.getElementById(`id${todo.todo_id}`);
-      if (modal) {
-        modal.modal("hide"); // Bootstrap modal method to close the modal
-      }
-    } catch (error) {
-      console.error("Error updating todo:", error.message);
+    } catch (err) {
+      console.error(err.message);
     }
   };
 
@@ -51,48 +54,56 @@ function EditTodos({ todo }) {
         Edit
       </button>
 
-      <div className="modal" id={`id${todo.todo_id}`} tabIndex="-1">
+      <div
+        className="modal"
+        id={`id${todo.todo_id}`}
+        onClick={() => setDescription(todo.description)}
+      >
         <div className="modal-dialog">
           <div className="modal-content">
             <div className="modal-header">
               <h4 className="modal-title">Edit Todo</h4>
-              <button type="button" className="close" data-dismiss="modal">
+              <button
+                type="button"
+                className="close"
+                data-dismiss="modal"
+                onClick={() => setDescription(todo.description)}
+              >
                 &times;
               </button>
             </div>
 
-            <form onSubmit={handleEdit}>
-              <div className="modal-body">
-                <input
-                  type="text"
-                  className="form-control"
-                  value={description}
-                  onChange={handleDescriptionChange}
-                />
-              </div>
+            <div className="modal-body">
+              <input
+                type="text"
+                className="form-control"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
 
-              <div className="modal-footer">
-                <button
-                  type="submit"
-                  className="btn btn-warning"
-                  data-dismiss="modal"
-                >
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-danger"
-                  data-dismiss="modal"
-                >
-                  Close
-                </button>
-              </div>
-            </form>
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="btn btn-warning"
+                onClick={(e) => updateDescription(e)}
+              >
+                Edit
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger"
+                data-dismiss="modal"
+                onClick={() => setDescription(todo.description)}
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </Fragment>
   );
-}
+};
 
-export default EditTodos;
+export default EditTodo;
